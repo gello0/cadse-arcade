@@ -104,3 +104,7 @@ void setVolume(int level);
 // Non-blocking sound effects: pairs of {frequency, duration_ms}, ended by {0, 0}
 void playSfx(const uint16_t *notes);
 void updateSfx();
+
+// Live tone for the synth: freq 0 = silence, widthEighths 1..4 = pulse width
+// from thin (12.5 %) to square (50 %). Stops any running sound effect.
+void toneOut(uint32_t freq, int widthEighths = 4);

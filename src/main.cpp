@@ -3,7 +3,7 @@
  * Menu:    touch Up/Down to choose, X or left bumper to play,
  *          touch Right to see that game's high scores,
  *          after the games: SENSORS (live dashboard + SD logging),
- *          IMU LOGGER (BNO085 + web page) and SETTINGS
+ *          SYNTH (play the buzzer), IMU LOGGER (BNO085 + web page) and SETTINGS
  * In game: touch X pauses; while paused X resumes, touch Left quits
  *
  * Every game has its own top 5 on the micro SD card, and every run is
@@ -18,6 +18,7 @@
 #include "dashboard.h"
 #include "splash.h"
 #include "imulogger.h"
+#include "synth.h"
 
 static const Game *const games[] = {
   &orbitGame,
@@ -28,19 +29,21 @@ static const Game *const games[] = {
   &patrolGame,
   &cargoGame,
   &tankGame,
+  &pulseGame,
   &duelGame,
 };
 static const int numGames = sizeof(games) / sizeof(games[0]);
 static const char *gameIds[numGames];
-static const int sensorsEntry = numGames;     // apps come after the games
-static const int loggerEntry = numGames + 1;
-static const int setupEntry = numGames + 2;
-static const int numEntries = numGames + 3;
+static const int synthEntry = numGames;       // apps come after the games
+static const int sensorsEntry = numGames + 1;
+static const int loggerEntry = numGames + 2;
+static const int setupEntry = numGames + 3;
+static const int numEntries = numGames + 4;
 
 const unsigned long frameMs = 33;          // ~30 fps
 const int menuRows = 4;
 
-enum State { SPLASH, MENU, SCORES, PLAYING, PAUSED, GAME_OVER, ENTER_NAME, SETTINGS, SENSORS, LOGGER };
+enum State { SPLASH, MENU, SCORES, PLAYING, PAUSED, GAME_OVER, ENTER_NAME, SETTINGS, SENSORS, LOGGER, SYNTH };
 
 static State state = SPLASH;
 static unsigned long stateSince;
@@ -92,7 +95,8 @@ static void drawMenu(){
       display.fillRect(0, y, screenW - 4, 10, SSD1306_BLACK);
     }
     display.setCursor(4, y + 1);
-    display.print(i == setupEntry ? "SETTINGS" : i == sensorsEntry ? "SENSORS" : i == loggerEntry ? "IMU LOGGER" : games[i]->title);
+    display.print(i == setupEntry ? "SETTINGS" : i == sensorsEntry ? "SENSORS" : i == loggerEntry ? "IMU LOGGER"
+                  : i == synthEntry ? "SYNTH" : games[i]->title);
     display.setTextColor(SSD1306_WHITE);
   }
 
@@ -103,6 +107,11 @@ static void drawMenu(){
 
   // bottom line alternates between help and best score
   display.fillRect(0, 54, screenW, 10, SSD1306_BLACK);
+  if( selected == synthEntry ){
+    centerText("play the buzzer", 55);
+    display.display();
+    return;
+  }
   if( selected == loggerEntry ){
     centerText("BNO085, web, SD log", 55);
     display.display();
@@ -298,6 +307,12 @@ void loop(){
         playSfx(sfxClick);
         setState(SCORES);
       }
+      if( (pressed.x || pressed.fire) && selected == synthEntry ){
+        resetLights();
+        synthStart();
+        setState(SYNTH);
+        break;
+      }
       if( (pressed.x || pressed.fire) && selected == loggerEntry ){
         resetLights();
         loggerStart();
@@ -338,7 +353,9 @@ void loop(){
       break;
 
     case PLAYING:
-      if( pressed.x && !games[selected]->online ){
+      // games that use X as a control pause with both bumpers
+      if( games[selected]->xIsInput ? (held.fire && held.shield)
+                                    : (pressed.x && !games[selected]->online) ){
         gameClockPause();
         playSfx(sfxClick);
         setState(PAUSED);
@@ -390,6 +407,15 @@ void loop(){
         break;
       }
       drawGameOver();
+      break;
+
+    case SYNTH:
+      if( !synthUpdate(held, pressed) ){
+        playSfx(sfxClick);
+        setState(MENU);
+        break;
+      }
+      synthDraw();
       break;
 
     case LOGGER:

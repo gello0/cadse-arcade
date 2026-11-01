@@ -34,15 +34,28 @@ static int volume = numVolumeLevels - 1;
 
 // arduino-esp32 3.x addresses LEDC by pin, 2.x by channel. ledcWriteTone
 // leaves the timer at 10 bit resolution, so the duty is written afterwards.
-static void buzzerTone(uint32_t freq){
-  uint32_t duty = (freq == 0) ? 0 : volumeDuty[volume];
+// widthEighths sets the pulse width (4 = 50 % square, 1 = thin 12.5 % pulse),
+// which changes the timbre. Unchanged settings are skipped so a synth can
+// call this every frame without clicks.
+static void buzzerToneWidth(uint32_t freq, int widthEighths){
+  static uint32_t lastFreq = 0xFFFFFFFF, lastDuty = 0xFFFFFFFF;
+  uint32_t duty = (freq == 0) ? 0 : volumeDuty[volume] * widthEighths / 4;
+  if( freq == lastFreq && duty == lastDuty ){
+    return;
+  }
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
-  ledcWriteTone(buzzerPin, freq);
+  if( freq != lastFreq ) ledcWriteTone(buzzerPin, freq);
   if( freq ) ledcWrite(buzzerPin, duty);
 #else
-  ledcWriteTone(channelBuzzer, freq);
+  if( freq != lastFreq ) ledcWriteTone(channelBuzzer, freq);
   if( freq ) ledcWrite(channelBuzzer, duty);
 #endif
+  lastFreq = freq;
+  lastDuty = duty;
+}
+
+static void buzzerTone(uint32_t freq){
+  buzzerToneWidth(freq, 4);
 }
 
 int getVolume(){
@@ -344,4 +357,9 @@ void updateSfx(){
   }
   buzzerTone(sfxNotes[0]);
   sfxNoteEnd = millis() + sfxNotes[1];
+}
+
+void toneOut(uint32_t freq, int widthEighths){
+  sfxNotes = nullptr;   // a live note takes over from any sound effect
+  buzzerToneWidth(freq, constrain(widthEighths, 1, 4));
 }

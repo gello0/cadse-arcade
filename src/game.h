@@ -24,6 +24,7 @@ struct Game {
   void (*resume)();                                // after a pause, may be nullptr
   bool versus;                                     // two players: no high scores, summary names the winner
   bool online;                                     // played over the radio: X doesn't pause
+  bool xIsInput;                                   // X is a game control: both bumpers pause instead
 };
 
 extern const Game orbitGame;
@@ -35,6 +36,7 @@ extern const Game tankGame;
 extern const Game patrolGame;
 extern const Game cargoGame;
 extern const Game duelGame;
+extern const Game pulseGame;
 
 // game clock in ms that stands still while paused
 void gameClockReset();
