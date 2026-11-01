@@ -37,6 +37,7 @@ extern const Game patrolGame;
 extern const Game cargoGame;
 extern const Game duelGame;
 extern const Game pulseGame;
+extern const Game derelictGame;
 
 // game clock in ms that stands still while paused
 void gameClockReset();

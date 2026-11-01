@@ -1,6 +1,6 @@
 # CADSE Arcade
 
-Firmware for the [CADSE PCB](https://git.tu-berlin.de/mse/se/cadse-hardware) (ESP32-S3 core + head board) from the Space Electronics class of the MSE program at TU Berlin: a game console with a menu, nine single-player games, a two-board radio duel, a synth, a sensor dashboard, and a BNO085 IMU logger with a live web page.
+Firmware for the [CADSE PCB](https://git.tu-berlin.de/mse/se/cadse-hardware) (ESP32-S3 core + head board) from the Space Electronics class of the MSE program at TU Berlin: a game console with a menu, ten single-player games, a two-board radio duel, a synth, a sensor dashboard, and a BNO085 IMU logger with a live web page.
 
 ## Features
 
@@ -17,11 +17,12 @@ Firmware for the [CADSE PCB](https://git.tu-berlin.de/mse/se/cadse-hardware) (ES
 | Cargo Drop | falling blocks with bomb pods | tilt or touch |
 | Tank Battle | top-down tank shooter | touch or tilt, bumper |
 | Pulse Cross | rhythm game, hits play a melody | touch pads, both bumpers pause |
+| Derelict | first-person raycaster shooter on a space station | tilt to turn, touch to move, bumpers |
 | Orbital Duel 2P | two boards over ESP-NOW | tilt, bumpers |
 
 **Apps**
 
-- **SYNTH**: play the buzzer with the touch pads; tilt bends the pitch and shifts the octave; six sounds and five scales.
+- **SYNTH**: play the buzzer with the touch pads; tilt bends the pitch and shifts the octave; ten presets and five public-domain demo songs.
 - **SENSORS**: live BME280 (temperature, humidity, pressure), LSM6DS3 spirit level and gyro, ADS1115 analog inputs, battery and system info, scrolling graphs, CSV logging to SD.
 - **IMU LOGGER**: BNO085 sensor fusion plus the onboard IMU, logged to SD at 10–100 Hz, with a live web page served over the board's own Wi-Fi.
 - **SETTINGS**: volume, LED brightness, boot splash style, tilt calibration. All saved to flash.

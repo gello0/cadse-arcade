@@ -30,6 +30,7 @@ static const Game *const games[] = {
   &cargoGame,
   &tankGame,
   &pulseGame,
+  &derelictGame,
   &duelGame,
 };
 static const int numGames = sizeof(games) / sizeof(games[0]);
