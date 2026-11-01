@@ -10,8 +10,9 @@
  *
  * The buzzer is a single square-wave voice, so the sounds come from pulse
  * width (timbre), pitch modulation and fast note switching. Demo songs are
- * public-domain tunes and play through the current preset, so tilt and
- * preset changes work on them too. Touching a pad stops the song.
+ * public-domain classics plus original chiptune tracks; they play through
+ * the current preset (chiptunes pick a fitting one at the start), so tilt
+ * and preset changes work on them too. Touching a pad stops the song.
  */
 #include "synth.h"
 #include "game.h"
@@ -82,18 +83,74 @@ static const uint8_t frereJacques[] = {
   255,0,
 };
 
+// original chiptune tracks written for the CADSE board; here one length unit
+// is a sixteenth at their faster tempo
+
+static const uint8_t starhop[] = {
+  69,1, 72,1, 76,1, 81,1, 79,1, 76,1, 72,1, 76,1,
+  77,1, 81,1, 84,1, 81,1, 79,1, 76,1, 79,1, 83,1,
+  81,2, 79,1, 76,1, 74,2, 72,2,
+  71,1, 74,1, 79,1, 74,1, 76,4,
+  69,1, 72,1, 76,1, 81,1, 79,1, 76,1, 72,1, 76,1,
+  77,1, 81,1, 84,1, 81,1, 83,1, 84,1, 86,1, 88,1,
+  77,1, 76,1, 74,1, 72,1, 71,2, 74,2,
+  69,4, 0,2, 81,1, 81,1,
+  255,0,
+};
+
+static const uint8_t pixelRun[] = {
+  72,1, 76,1, 79,1, 84,1, 79,1, 76,1, 72,2,
+  74,1, 77,1, 81,1, 86,1, 81,1, 77,1, 74,2,
+  76,1, 79,1, 83,1, 88,1, 83,1, 79,1, 76,2,
+  77,2, 76,1, 74,1, 72,4,
+  79,1, 79,1, 0,1, 79,1, 81,2, 79,2,
+  77,1, 76,1, 74,1, 76,1, 72,4,
+  79,1, 79,1, 0,1, 79,1, 81,2, 83,2,
+  84,2, 79,1, 76,1, 72,4,
+  255,0,
+};
+
+static const uint8_t nebula[] = {
+  74,2, 77,2, 81,4,
+  79,2, 77,2, 76,4,
+  74,2, 76,2, 77,2, 79,2,
+  81,6, 0,2,
+  82,2, 81,2, 79,4,
+  77,2, 76,2, 74,4,
+  73,2, 76,2, 79,2, 76,2,
+  74,8,
+  255,0,
+};
+
+static const uint8_t bossBattle[] = {
+  52,1, 52,1, 64,1, 52,1, 52,1, 62,1, 52,1, 60,1,
+  52,1, 52,1, 59,1, 52,1, 60,1, 59,1, 55,1, 57,1,
+  52,1, 52,1, 64,1, 52,1, 52,1, 62,1, 52,1, 60,1,
+  52,1, 52,1, 59,1, 52,1, 55,1, 57,1, 59,1, 62,1,
+  64,2, 67,2, 71,2, 70,1, 69,1,
+  67,2, 64,2, 62,4,
+  64,2, 67,2, 71,2, 74,1, 72,1,
+  71,2, 70,2, 64,4,
+  255,0,
+};
+
 struct Song {
   const char *name;
-  uint16_t eighthMs;
+  uint16_t eighthMs;      // length of one unit
   const uint8_t *notes;
+  int8_t preset;          // preset to switch to when the song starts, -1 = keep
 };
 
 static const Song songs[] = {
-  {"ODE TO JOY", 250, odeToJoy},
-  {"FUR ELISE", 180, furElise},
-  {"MOUNTAIN KING", 170, mountainKing},
-  {"TWINKLE", 230, twinkle},
-  {"FRERE JACQUES", 220, frereJacques},
+  {"ODE TO JOY", 250, odeToJoy, -1},
+  {"FUR ELISE", 180, furElise, -1},
+  {"MOUNTAIN KING", 170, mountainKing, -1},
+  {"TWINKLE", 230, twinkle, -1},
+  {"FRERE JACQUES", 220, frereJacques, -1},
+  {"STARHOP", 115, starhop, 1},         // 8-BIT LEAD
+  {"PIXEL RUN", 120, pixelRun, 0},      // CHIPTUNE
+  {"NEBULA", 210, nebula, 3},           // SPACE PAD
+  {"BOSS BATTLE", 105, bossBattle, 2},  // MOODY
 };
 static const int numSongs = sizeof(songs) / sizeof(songs[0]);
 
@@ -128,6 +185,9 @@ static bool keyHeld(const Buttons &b, int k){
 
 static void startSong(int s){
   song = s;
+  if( songs[s].preset >= 0 ){
+    preset = songs[s].preset;
+  }
   songPos = 0;
   noteStart = millis();
   noteEnd = noteStart;      // the first note starts on the next update

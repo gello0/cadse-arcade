@@ -22,7 +22,7 @@ Firmware for the [CADSE PCB](https://git.tu-berlin.de/mse/se/cadse-hardware) (ES
 
 **Apps**
 
-- **SYNTH**: play the buzzer with the touch pads; tilt bends the pitch and shifts the octave; ten presets and five public-domain demo songs.
+- **SYNTH**: play the buzzer with the touch pads; tilt bends the pitch and shifts the octave; ten presets, five public-domain classics and four original chiptune tracks.
 - **SENSORS**: live BME280 (temperature, humidity, pressure), LSM6DS3 spirit level and gyro, ADS1115 analog inputs, battery and system info, scrolling graphs, CSV logging to SD.
 - **IMU LOGGER**: BNO085 sensor fusion plus the onboard IMU, logged to SD at 10–100 Hz, with a live web page served over the board's own Wi-Fi.
 - **SETTINGS**: volume, LED brightness, boot splash style, tilt calibration. All saved to flash.
